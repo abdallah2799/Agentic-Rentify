@@ -32,15 +32,7 @@ public class EmailTemplateService
 
                             {{DYNAMIC_CONTENT}}
 
-                            <table role=""presentation"" cellspacing=""0"" cellpadding=""0"" border=""0"" width=""100%"" style=""margin: 0 0 20px;"">
-                                <tr>
-                                    <td style=""padding: 20px; background-color: #fff8f5; border-left: 4px solid #C86A41; border-radius: 4px;"">
-                                        <p style=""margin: 0; font-size: 14px; line-height: 1.5; color: #4a4a4a;"">
-                                            <strong style=""color: #1a1a1a;"">Security Note:</strong> This code will expire in 10 minutes. If you didn't request this code, please ignore this email or contact support if you have concerns.
-                                        </p>
-                                    </td>
-                                </tr>
-                            </table>
+                            {{SECURITY_NOTE}}
 
                         </td>
                     </tr>
@@ -86,9 +78,9 @@ public class EmailTemplateService
                     </tr>
                 </table>";
         }
-        else if (!string.IsNullOrEmpty(actionLink) && !string.IsNullOrEmpty(actionButtonText))
+        if (!string.IsNullOrEmpty(actionLink) && !string.IsNullOrEmpty(actionButtonText))
         {
-            dynamicContent = $@"
+             dynamicContent = $@"
                 <table role=""presentation"" cellspacing=""0"" cellpadding=""0"" border=""0"" width=""100%"" style=""margin: 0 0 30px;"">
                     <tr>
                         <td align=""center"">
@@ -101,6 +93,24 @@ public class EmailTemplateService
         }
 
         finalBody = finalBody.Replace("{{DYNAMIC_CONTENT}}", dynamicContent);
+
+        // Security Note Logic: Show only if it's an action (OTP or Link)
+        string securityNote = "";
+        if (!string.IsNullOrEmpty(otpCode) || (!string.IsNullOrEmpty(actionLink) && !string.IsNullOrEmpty(actionButtonText)))
+        {
+            securityNote = @"
+                <table role=""presentation"" cellspacing=""0"" cellpadding=""0"" border=""0"" width=""100%"" style=""margin: 0 0 20px;"">
+                    <tr>
+                        <td style=""padding: 20px; background-color: #fff8f5; border-left: 4px solid #C86A41; border-radius: 4px;"">
+                            <p style=""margin: 0; font-size: 14px; line-height: 1.5; color: #4a4a4a;"">
+                                <strong style=""color: #1a1a1a;"">Security Note:</strong> This link/code will expire in 10 minutes. If you didn't request this, please ignore this email or contact support if you have concerns.
+                            </p>
+                        </td>
+                    </tr>
+                </table>";
+        }
+
+        finalBody = finalBody.Replace("{{SECURITY_NOTE}}", securityNote);
         
         // Cleanup legacy placeholders if any
         finalBody = finalBody.Replace("{{OTP_CODE}}", ""); 
