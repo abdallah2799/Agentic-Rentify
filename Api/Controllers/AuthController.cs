@@ -131,4 +131,19 @@ public class AuthController : ControllerBase
         await _mediator.Send(command);
         return Ok(new { Message = "Email verified successfully" });
     }
+
+    /// <summary>
+    /// Resends the OTP for email verification.
+    /// </summary>
+    /// <param name="command">The user's email.</param>
+    /// <returns>Success message.</returns>
+    [HttpPost("resend-otp")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ResendOtp([FromBody] ResendOtpCommand command)
+    {
+        await _mediator.Send(command);
+        return Ok(new { Message = "OTP resent successfully" });
+    }
 }

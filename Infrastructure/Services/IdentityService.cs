@@ -96,6 +96,29 @@ public class IdentityService : IIdentityService
         return true;
     }
 
+    public async Task ResendOtpAsync(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null) throw new NotFoundException("User not found");
+
+        if (user.IsVerified) throw new BadRequestException("Email is already verified");
+
+        // Generate new OTP
+        var otp = new Random().Next(100000, 999999).ToString();
+        user.EmailVerificationCode = otp;
+        user.EmailVerificationCodeExpiresAt = DateTime.UtcNow.AddMinutes(10);
+        
+        await _userManager.UpdateAsync(user);
+
+        // Send OTP Email
+        _backgroundJobClient.Enqueue(() => _emailService.SendEmailAsync(
+            email, 
+            "Verify Your Email - Resend", 
+            $"Your new verification code is",
+            otp
+        ));
+    }
+
     public async Task<AuthResponseDto> LoginAsync(string email, string password)
     {
         var user = await _userManager.FindByEmailAsync(email);
