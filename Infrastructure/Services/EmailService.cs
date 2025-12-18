@@ -24,7 +24,7 @@ public class EmailService : IEmailService
 
         // Fetch Logo URL (should be in config or Cloudinary) 
         // For now, defaulting or hardcoding as per user preference context
-        string logoUrl = "https://res.cloudinary.com/dijyfu0m3/image/upload/v1766090397/zocvo7jehb3elemrwv2x.svg"; 
+        string logoUrl = "https://res.cloudinary.com/dijyfu0m3/image/upload/v1766090397/zocvo7jehb3elemrwv2x.png"; 
 
         // Generate the templated body using the "body" argument as the "BODY_TEXT"
         // We leave OTP_CODE and others empty if not provided in the body string (which is a bit hacky, but requested: "all emails usage template")

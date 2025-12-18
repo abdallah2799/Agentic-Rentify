@@ -71,7 +71,7 @@ public class EmailTemplateService
 </body>
 </html>";
 
-    public string GenerateEmailBody(string heading, string bodyText, string otpCode, string userEmail, string logoUrl = "https://res.cloudinary.com/dijyfu0m3/image/upload/v1766090397/zocvo7jehb3elemrwv2x.svg")
+    public string GenerateEmailBody(string heading, string bodyText, string otpCode, string userEmail, string logoUrl = "https://res.cloudinary.com/dijyfu0m3/image/upload/v1766090397/zocvo7jehb3elemrwv2x.png")
     {
         string finalBody = Template
             .Replace("{{HEADING}}", heading)
