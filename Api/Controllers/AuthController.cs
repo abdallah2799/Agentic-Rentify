@@ -2,6 +2,9 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
+/// <summary>
+/// Manages user authentication, registration, and security operations (Login, Register, OTP, Password Management).
+/// </summary>
 [Route("api/[controller]")]
 [ApiController]
 public class AuthController : ControllerBase
@@ -16,8 +19,14 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Registers a new user.
     /// </summary>
-    /// <param name="command">The registration details.</param>
-    /// <returns>The created user's auth details.</returns>
+    /// <remarks>
+    /// Creates a new user account, generates an OTP, and sends a verification email.
+    /// Password must contain at least 8 characters, one uppercase, one lowercase, one number, and one special character.
+    /// </remarks>
+    /// <param name="command">The registration details including email, password, and personal info.</param>
+    /// <returns>AuthResponseDto containing tokens and user info.</returns>
+    /// <response code="200">User registered successfully.</response>
+    /// <response code="400">Invalid input or user already exists.</response>
     [HttpPost("register")]
     [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -29,8 +38,14 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Logs in an existing user.
     /// </summary>
-    /// <param name="command">Login credentials.</param>
-    /// <returns>JWT Access Token and Refresh Token.</returns>
+    /// <remarks>
+    /// Authenticates a user and returns a JWT access token and refresh token.
+    /// Rate limiting applies. Account lockouts occur after 5 failed attempts (15 min duration).
+    /// </remarks>
+    /// <param name="command">Credentials (Email and Password).</param>
+    /// <returns>AuthResponseDto with JWT token.</returns>
+    /// <response code="200">Login successful.</response>
+    /// <response code="401">Invalid credentials or account locked.</response>
     [HttpPost("login")]
     [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -40,10 +55,15 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Logs in using Google ID Token.
+    /// Logs in or registers a user using Google OAuth.
     /// </summary>
+    /// <remarks>
+    /// Validates the Google ID Token and creates/returns a user session.
+    /// </remarks>
     /// <param name="command">Google ID Token.</param>
-    /// <returns>JWT Access Token and Refresh Token.</returns>
+    /// <returns>AuthResponseDto with JWT token.</returns>
+    /// <response code="200">Authenticated successfully.</response>
+    /// <response code="400">Invalid Google Token.</response>
     [HttpPost("google-login")]
     [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -53,10 +73,15 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Refreshes the Access Token using a Refresh Token.
+    /// Refreshes the Access Token.
     /// </summary>
-    /// <param name="command">The expired token and valid refresh token.</param>
-    /// <returns>New JWT Access Token and Refresh Token.</returns>
+    /// <remarks>
+    /// Uses a valid Refresh Token to obtain a new Access Token without re-credentials.
+    /// </remarks>
+    /// <param name="command">The current tokens.</param>
+    /// <returns>New tokens.</returns>
+    /// <response code="200">Tokens refreshed.</response>
+    /// <response code="400">Invalid or expired tokens.</response>
     [HttpPost("refresh-token")]
     [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -66,10 +91,15 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Initiates the forgot password process.
+    /// Initiates password reset flow.
     /// </summary>
-    /// <param name="command">The user's email.</param>
-    /// <returns>Success message.</returns>
+    /// <remarks>
+    /// Sends an email with a unique deep link to reset the password.
+    /// Always returns 200 OK to prevent email enumeration.
+    /// </remarks>
+    /// <param name="command">User's email.</param>
+    /// <returns>Generic success message.</returns>
+    /// <response code="200">Request processed.</response>
     [HttpPost("forgot-password")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand command)
@@ -79,10 +109,15 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Resets the user's password using a token.
+    /// Completes password reset.
     /// </summary>
-    /// <param name="command">The email, token, and new password.</param>
+    /// <remarks>
+    /// Sets a new password using the token received in email.
+    /// </remarks>
+    /// <param name="command">Token, email, and new password.</param>
     /// <returns>Success message.</returns>
+    /// <response code="200">Password reset successful.</response>
+    /// <response code="400">Invalid token or password complexity failure.</response>
     [HttpPost("reset-password")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -93,14 +128,21 @@ public class AuthController : ControllerBase
     }
     
     /// <summary>
-    /// Changes the password for the current user.
+    /// Changes the password for the currently authenticated user.
     /// </summary>
-    /// <param name="command">Email, current password, and new password.</param>
+    /// <remarks>
+    /// Requires a valid Bearer token.
+    /// </remarks>
+    /// <param name="command">Current and new password.</param>
     /// <returns>Success message.</returns>
+    /// <response code="200">Password changed.</response>
+    /// <response code="401">Unauthorized.</response>
+    /// <response code="400">Incorrect current password.</response>
     [Authorize]
     [HttpPost("change-password")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command)
     {
         await _mediator.Send(command);
@@ -108,10 +150,10 @@ public class AuthController : ControllerBase
     }
     
     /// <summary>
-    /// Validates if a JWT token is valid.
+    /// Validates a JWT token's signature and expiration.
     /// </summary>
-    /// <param name="token">The JWT token to validate.</param>
-    /// <returns>True if valid, false otherwise.</returns>
+    /// <param name="token">The JWT string.</param>
+    /// <returns>Boolean indicating validity.</returns>
     [HttpGet("validate-token")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     public async Task<ActionResult<bool>> ValidateToken([FromQuery] string token)
@@ -120,10 +162,15 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Verifies the user's email using the OTP code.
+    /// Verifies email using OTP.
     /// </summary>
-    /// <param name="command">Email and OTP Code.</param>
+    /// <remarks>
+    /// Marks the user as verified if OTP is correct and not expired (10 min).
+    /// </remarks>
+    /// <param name="command">Email and OTP.</param>
     /// <returns>Success message.</returns>
+    /// <response code="200">Verified.</response>
+    /// <response code="400">Invalid or expired OTP.</response>
     [HttpPost("verify-email")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -135,10 +182,16 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Resends the OTP for email verification.
+    /// Resends the Email Verification OTP.
     /// </summary>
-    /// <param name="command">The user's email.</param>
+    /// <remarks>
+    /// Requires a valid Bearer token (even if user is not verified).
+    /// Generates a new 6-digit OTP and invalidates the old one.
+    /// </remarks>
+    /// <param name="command">User email.</param>
     /// <returns>Success message.</returns>
+    /// <response code="200">OTP Sent.</response>
+    /// <response code="401">Unauthorized.</response>
     [Authorize]
     [HttpPost("resend-otp")]
     [ProducesResponseType(StatusCodes.Status200OK)]

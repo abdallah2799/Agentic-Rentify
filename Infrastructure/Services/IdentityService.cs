@@ -122,8 +122,22 @@ public class IdentityService : IIdentityService
     public async Task<AuthResponseDto> LoginAsync(string email, string password)
     {
         var user = await _userManager.FindByEmailAsync(email);
-        if (user == null || !await _userManager.CheckPasswordAsync(user, password))
+        if (user == null) 
             throw new UnauthorizedException("Unauthorized: Invalid Credentials");
+
+        if (await _userManager.IsLockedOutAsync(user))
+            throw new UnauthorizedException($"Account is locked out. Try again in {user.LockoutEnd?.Subtract(DateTime.UtcNow).Minutes} minutes.");
+
+        if (!await _userManager.CheckPasswordAsync(user, password))
+        {
+            await _userManager.AccessFailedAsync(user);
+            if (await _userManager.IsLockedOutAsync(user))
+             throw new UnauthorizedException("Account locked out due to multiple failed attempts.");
+             
+            throw new UnauthorizedException("Unauthorized: Invalid Credentials");
+        }
+
+        await _userManager.ResetAccessFailedCountAsync(user);
 
         return await GenerateAuthResponseAsync(user);
     }
