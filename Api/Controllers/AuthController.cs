@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -96,6 +97,7 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="command">Email, current password, and new password.</param>
     /// <returns>Success message.</returns>
+    [Authorize]
     [HttpPost("change-password")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -137,6 +139,7 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="command">The user's email.</param>
     /// <returns>Success message.</returns>
+    [Authorize]
     [HttpPost("resend-otp")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
