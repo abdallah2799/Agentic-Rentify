@@ -133,3 +133,8 @@ $RECYCLE.BIN/
 # JetBrains
 .idea/
 *.sln.iml
+
+# Security
+appsettings.json
+appsettings.*.json
+!appsettings.Example.json
