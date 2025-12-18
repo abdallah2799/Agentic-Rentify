@@ -30,15 +30,7 @@ public class EmailTemplateService
                                 {{BODY_TEXT}}
                             </p>
 
-                            <table role=""presentation"" cellspacing=""0"" cellpadding=""0"" border=""0"" width=""100%"" style=""margin: 0 0 30px;"">
-                                <tr>
-                                    <td style=""padding: 30px; background-color: #f9f9f9; border: 2px solid #e5e5e5; border-radius: 8px; text-align: center;"">
-                                        <div style=""font-size: 36px; font-weight: 700; color: #1a1a1a; letter-spacing: 8px; font-family: 'Courier New', Courier, monospace;"">
-                                            {{OTP_CODE}}
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
+                            {{DYNAMIC_CONTENT}}
 
                             <table role=""presentation"" cellspacing=""0"" cellpadding=""0"" border=""0"" width=""100%"" style=""margin: 0 0 20px;"">
                                 <tr>
@@ -71,7 +63,7 @@ public class EmailTemplateService
 </body>
 </html>";
 
-    public string GenerateEmailBody(string heading, string bodyText, string otpCode, string userEmail, string logoUrl = "https://res.cloudinary.com/dijyfu0m3/image/upload/v1766090397/zocvo7jehb3elemrwv2x.png")
+    public string GenerateEmailBody(string heading, string bodyText, string otpCode = "", string actionLink = "", string actionButtonText = "", string userEmail = "", string logoUrl = "https://res.cloudinary.com/dijyfu0m3/image/upload/v1766090397/zocvo7jehb3elemrwv2x.png")
     {
         string finalBody = Template
             .Replace("{{HEADING}}", heading)
@@ -79,21 +71,39 @@ public class EmailTemplateService
             .Replace("{{USER_EMAIL}}", userEmail)
             .Replace("{{LOGO_URL}}", logoUrl);
 
-        // Handle Optional OTP Code
-        if (string.IsNullOrEmpty(otpCode))
+        string dynamicContent = "";
+
+        if (!string.IsNullOrEmpty(otpCode))
         {
-            // Remove the OTP table block if OTP is empty
-            // This is a simple string replacement removal. 
-            // Ideally we'd use regex or specific IDs, but for this specific template structure:
-             finalBody = finalBody.Replace("{{OTP_CODE}}", "");
-             // We can also try to remove the surrounding table if we want to be cleaner, but just clearing the code is safer to avoid breaking HTML structure blindly.
+            dynamicContent = $@"
+                <table role=""presentation"" cellspacing=""0"" cellpadding=""0"" border=""0"" width=""100%"" style=""margin: 0 0 30px;"">
+                    <tr>
+                        <td style=""padding: 30px; background-color: #f9f9f9; border: 2px solid #e5e5e5; border-radius: 8px; text-align: center;"">
+                            <div style=""font-size: 36px; font-weight: 700; color: #1a1a1a; letter-spacing: 8px; font-family: 'Courier New', Courier, monospace;"">
+                                {otpCode}
+                            </div>
+                        </td>
+                    </tr>
+                </table>";
         }
-        else
+        else if (!string.IsNullOrEmpty(actionLink) && !string.IsNullOrEmpty(actionButtonText))
         {
-            finalBody = finalBody.Replace("{{OTP_CODE}}", otpCode);
+            dynamicContent = $@"
+                <table role=""presentation"" cellspacing=""0"" cellpadding=""0"" border=""0"" width=""100%"" style=""margin: 0 0 30px;"">
+                    <tr>
+                        <td align=""center"">
+                            <a href=""{actionLink}"" style=""background-color: #C86A41; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 16px;"">
+                                {actionButtonText}
+                            </a>
+                        </td>
+                    </tr>
+                </table>";
         }
+
+        finalBody = finalBody.Replace("{{DYNAMIC_CONTENT}}", dynamicContent);
         
-        // Remove MAGIC_LINK_URL placeholder if unused (it wasn't in parameters but is in template)
+        // Cleanup legacy placeholders if any
+        finalBody = finalBody.Replace("{{OTP_CODE}}", ""); 
         finalBody = finalBody.Replace("{{MAGIC_LINK_URL}}", "#");
 
         return finalBody;

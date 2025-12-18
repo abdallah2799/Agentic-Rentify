@@ -13,7 +13,7 @@ public class EmailService : IEmailService
         _emailTemplateService = emailTemplateService;
     }
 
-    public async Task SendEmailAsync(string to, string subject, string body, string otp = "")
+    public async Task SendEmailAsync(string to, string subject, string body, string otp = "", string actionLink = "", string actionButtonText = "")
     {
         var apiKey = _configuration["SendGrid:ApiKey"];
         var client = new SendGridClient(apiKey);
@@ -33,7 +33,9 @@ public class EmailService : IEmailService
         string templatedBody = _emailTemplateService.GenerateEmailBody(
             heading: subject, 
             bodyText: body, 
-            otpCode: otp, 
+            otpCode: otp,
+            actionLink: actionLink,
+            actionButtonText: actionButtonText,
             userEmail: to, 
             logoUrl: logoUrl
         );

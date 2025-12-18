@@ -199,9 +199,22 @@ public class IdentityService : IIdentityService
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         
-        string message = $"We received a request to reset your password. Use the token below: {token}";
+        // Construct Reset Link
+        var clientUrl = _configuration["ClientAppUrl"] ?? "http://localhost:3000";
+        var encodedToken = Uri.EscapeDataString(token);
+        var encodedEmail = Uri.EscapeDataString(email);
+        var resetLink = $"{clientUrl}/auth/reset-password?token={encodedToken}&email={encodedEmail}";
 
-        _backgroundJobClient.Enqueue(() => _emailService.SendEmailAsync(email, "Reset Password Token", message));
+        string message = "We received a request to reset your password. Click the button below to proceed.";
+
+        _backgroundJobClient.Enqueue(() => _emailService.SendEmailAsync(
+            email, 
+            "Reset Password", 
+            message,
+            "", // No OTP
+            resetLink,
+            "Reset Password"
+        ));
     }
 
     public async Task ResetPasswordAsync(string email, string token, string newPassword)
