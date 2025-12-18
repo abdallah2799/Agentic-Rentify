@@ -46,6 +46,12 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("EmailVerificationCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("EmailVerificationCodeExpiresAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -614,7 +620,8 @@ namespace Infrastructure.Migrations
 
                             b1.Property<int>("Available");
 
-                            b1.Property<decimal>("Price");
+                            b1.Property<decimal>("Price")
+                                .HasPrecision(18, 2);
 
                             b1.Property<string>("Type")
                                 .IsRequired();

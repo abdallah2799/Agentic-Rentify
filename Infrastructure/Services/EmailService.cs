@@ -5,13 +5,15 @@ using Microsoft.Extensions.Configuration;
 public class EmailService : IEmailService
 {
     private readonly IConfiguration _configuration;
+    private readonly EmailTemplateService _emailTemplateService;
 
-    public EmailService(IConfiguration configuration)
+    public EmailService(IConfiguration configuration, EmailTemplateService emailTemplateService)
     {
         _configuration = configuration;
+        _emailTemplateService = emailTemplateService;
     }
 
-    public async Task SendEmailAsync(string to, string subject, string body)
+    public async Task SendEmailAsync(string to, string subject, string body, string otp = "")
     {
         var apiKey = _configuration["SendGrid:ApiKey"];
         var client = new SendGridClient(apiKey);
@@ -19,7 +21,24 @@ public class EmailService : IEmailService
         var fromName = _configuration["SendGrid:FromName"];
         var from = new EmailAddress(fromEmail, fromName);
         var toAddress = new EmailAddress(to);
-        var msg = MailHelper.CreateSingleEmail(from, toAddress, subject, body, body);
+
+        // Fetch Logo URL (should be in config or Cloudinary) 
+        // For now, defaulting or hardcoding as per user preference context
+        string logoUrl = "https://res.cloudinary.com/dijyfu0m3/image/upload/v1766090397/zocvo7jehb3elemrwv2x.svg"; 
+
+        // Generate the templated body using the "body" argument as the "BODY_TEXT"
+        // We leave OTP_CODE and others empty if not provided in the body string (which is a bit hacky, but requested: "all emails usage template")
+        // Better approach: Check if body is plain text, then wrap it.
+        
+        string templatedBody = _emailTemplateService.GenerateEmailBody(
+            heading: subject, 
+            bodyText: body, 
+            otpCode: otp, 
+            userEmail: to, 
+            logoUrl: logoUrl
+        );
+
+        var msg = MailHelper.CreateSingleEmail(from, toAddress, subject, templatedBody, templatedBody);
         var response = await client.SendEmailAsync(msg);
         
         if (!response.IsSuccessStatusCode)

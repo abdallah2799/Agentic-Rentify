@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Hangfire;
+using System;
+using System;
 
 public class IdentityService : IIdentityService
 {
@@ -13,17 +16,23 @@ public class IdentityService : IIdentityService
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IConfiguration _configuration;
     private readonly IEmailService _emailService;
+    private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly EmailTemplateService _emailTemplateService;
 
     public IdentityService(
         UserManager<ApplicationUser> userManager, 
         SignInManager<ApplicationUser> signInManager, 
         IConfiguration configuration,
-        IEmailService emailService)
+        IEmailService emailService,
+        IBackgroundJobClient backgroundJobClient,
+        EmailTemplateService emailTemplateService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
         _emailService = emailService;
+        _backgroundJobClient = backgroundJobClient;
+        _emailTemplateService = emailTemplateService;
     }
 
     public async Task<AuthResponseDto> RegisterAsync(string email, string password, string firstName, string lastName, string gender, string nationality, DateTime dateOfBirth, string? profileImage)
@@ -50,7 +59,41 @@ public class IdentityService : IIdentityService
         if (!result.Succeeded)
             throw new BadRequestException("User creation failed! Errors: " + string.Join(", ", result.Errors.Select(e => e.Description)));
 
+        // Generate OTP
+        var otp = new Random().Next(100000, 999999).ToString();
+        user.EmailVerificationCode = otp;
+        user.EmailVerificationCodeExpiresAt = DateTime.UtcNow.AddMinutes(10);
+        await _userManager.UpdateAsync(user);
+
+        // Send OTP Email
+        _backgroundJobClient.Enqueue(() => _emailService.SendEmailAsync(
+            email, 
+            "Verify Your Email", 
+            $"Your verification code is {otp}",
+            otp
+        ));
+
         return await GenerateAuthResponseAsync(user);
+    }
+
+    public async Task<bool> ConfirmEmailAsync(string email, string code)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null) throw new NotFoundException("User not found");
+
+        if (user.IsVerified) return true;
+
+        if (user.EmailVerificationCode != code || user.EmailVerificationCodeExpiresAt < DateTime.UtcNow)
+        {
+            throw new BadRequestException("Invalid or expired verification code");
+        }
+
+        user.IsVerified = true;
+        user.EmailVerificationCode = null;
+        user.EmailVerificationCodeExpiresAt = null;
+        await _userManager.UpdateAsync(user);
+
+        return true;
     }
 
     public async Task<AuthResponseDto> LoginAsync(string email, string password)
@@ -129,15 +172,13 @@ public class IdentityService : IIdentityService
     public async Task ForgotPasswordAsync(string email)
     {
         var user = await _userManager.FindByEmailAsync(email);
-        if (user == null) return; // Silent return for security
+        if (user == null) return; 
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        // In a real app, generate a link to frontend
-        // var link = $"https://app.com/reset-password?email={email}&token={Uri.EscapeDataString(token)}";
-        // await _emailService.SendEmailAsync(email, "Reset Password", $"Please reset your password by clicking here: {link}");
         
-        // Since we don't know the FE URL, we send the raw token or a placeholder link
-         await _emailService.SendEmailAsync(email, "Reset Password Token", $"Your Reset Token is: {token}");
+        string message = $"We received a request to reset your password. Use the token below: {token}";
+
+        _backgroundJobClient.Enqueue(() => _emailService.SendEmailAsync(email, "Reset Password Token", message));
     }
 
     public async Task ResetPasswordAsync(string email, string token, string newPassword)

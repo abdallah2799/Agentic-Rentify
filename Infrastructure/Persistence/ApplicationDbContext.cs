@@ -28,6 +28,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<IdentityUserLogin<string>>(b => b.ToTable("UserLogins"));
         modelBuilder.Entity<IdentityRoleClaim<string>>(b => b.ToTable("RoleClaims"));
         modelBuilder.Entity<IdentityUserToken<string>>(b => b.ToTable("UserTokens"));
+
     }
 
 }

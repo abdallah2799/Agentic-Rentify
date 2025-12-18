@@ -1,5 +1,6 @@
 ﻿using Serilog;
 using Scalar.AspNetCore;
+using Hangfire;
 
 // 1. إعداد الـ Logger المبدئي
 Log.Logger = new LoggerConfiguration()
@@ -26,6 +27,17 @@ try
 
     // 3. دعم الـ OpenApi (الأساسي لـ Scalar)
     builder.Services.AddOpenApi();
+    
+    // CORS Configuration
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAll", policy => 
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        });
+    });
 
     var app = builder.Build();
 
@@ -42,7 +54,10 @@ try
     }
     app.UseSerilogRequestLogging();
     app.UseMiddleware<GlobalExceptionHandler>(); // Use Middleware
+    app.UseHangfireDashboard();
     app.UseHttpsRedirection();
+    app.UseStaticFiles();
+    app.UseCors("AllowAll");
     app.UseAuthorization();
     app.MapControllers();
 

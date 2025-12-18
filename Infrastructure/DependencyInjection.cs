@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Hangfire;
+using Hangfire.SqlServer;
 
 public static class InfrastructureExtensions
 {
@@ -50,6 +52,20 @@ public static class InfrastructureExtensions
         // Register Services
         services.AddTransient<IIdentityService, IdentityService>();
         services.AddTransient<IEmailService, EmailService>();
+        services.AddScoped<CloudinaryService>();
+        services.AddScoped<EmailTemplateService>();
+
+        // Hangfire Configuration
+        // Hangfire Configuration
+        services.AddHangfire(config => 
+        {
+             config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(configuration.GetConnectionString("DefaultConnection"));
+        });
+        
+        services.AddHangfireServer();
 
         return services;
     }

@@ -116,4 +116,19 @@ public class AuthController : ControllerBase
     {
         return Ok(await _mediator.Send(new ValidateTokenQuery { Token = token }));
     }
+
+    /// <summary>
+    /// Verifies the user's email using the OTP code.
+    /// </summary>
+    /// <param name="command">Email and OTP Code.</param>
+    /// <returns>Success message.</returns>
+    [HttpPost("verify-email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailCommand command)
+    {
+        await _mediator.Send(command);
+        return Ok(new { Message = "Email verified successfully" });
+    }
 }
