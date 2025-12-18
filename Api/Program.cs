@@ -18,8 +18,10 @@ try
      .ReadFrom.Services(services)
      .Enrich.FromLogContext());
 
+    builder.Services.AddApplicationServices();
     builder.Services.AddInfrastructureServices(builder.Configuration);
 
+    builder.Services.AddTransient<GlobalExceptionHandler>(); // Register Middleware
     builder.Services.AddControllers();
 
     // 3. دعم الـ OpenApi (الأساسي لـ Scalar)
@@ -39,6 +41,7 @@ try
         });
     }
     app.UseSerilogRequestLogging();
+    app.UseMiddleware<GlobalExceptionHandler>(); // Use Middleware
     app.UseHttpsRedirection();
     app.UseAuthorization();
     app.MapControllers();
