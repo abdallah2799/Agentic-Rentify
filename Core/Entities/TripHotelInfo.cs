@@ -1,4 +1,6 @@
-﻿public class TripHotelInfo
+﻿namespace Agentic_Rentify.Core.Entities;
+
+public class TripHotelInfo
 {
     public string Name { get; set; } = string.Empty;
     public double Rating { get; set; }

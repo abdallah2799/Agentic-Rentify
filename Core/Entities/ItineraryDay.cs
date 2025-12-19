@@ -1,4 +1,5 @@
-﻿// Core -> Entities -> Helpers (أو في نفس ملف الـ Entity)
+﻿namespace Agentic_Rentify.Core.Entities;
+
 public class ItineraryDay
 {
     public int Day { get; set; }
@@ -6,4 +7,3 @@ public class ItineraryDay
     public string Description { get; set; } = string.Empty;
     public List<Activity> Activities { get; set; } = [];
 }
-

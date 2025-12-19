@@ -11,4 +11,10 @@ public class ApplicationUser : IdentityUser
     public string? ProfileImage { get; set; }
     public bool IsVerified { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public string? RefreshToken { get; set; }
+    public DateTime RefreshTokenExpiryTime { get; set; }
+
+    public string? EmailVerificationCode { get; set; }
+    public DateTime? EmailVerificationCodeExpiresAt { get; set; }
 }

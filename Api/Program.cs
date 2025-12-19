@@ -1,5 +1,6 @@
 ﻿using Serilog;
 using Scalar.AspNetCore;
+using Hangfire;
 
 // 1. إعداد الـ Logger المبدئي
 Log.Logger = new LoggerConfiguration()
@@ -18,12 +19,26 @@ try
      .ReadFrom.Services(services)
      .Enrich.FromLogContext());
 
+    builder.Services.AddApplicationServices();
     builder.Services.AddInfrastructureServices(builder.Configuration);
 
+    // builder.Services.AddTransient<Agentic_Rentify.Api.Middleware.GlobalExceptionHandlerMiddleware>(); // Middleware registered via UseMiddleware does not need DI registration if strictly conventional.
+    // Removed to fix RequestDelegate resolution error.
     builder.Services.AddControllers();
 
     // 3. دعم الـ OpenApi (الأساسي لـ Scalar)
     builder.Services.AddOpenApi();
+    
+    // CORS Configuration
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAll", policy => 
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        });
+    });
 
     var app = builder.Build();
 
@@ -39,7 +54,11 @@ try
         });
     }
     app.UseSerilogRequestLogging();
+    app.UseMiddleware<Agentic_Rentify.Api.Middleware.GlobalExceptionHandlerMiddleware>(); // Use Middleware
+    app.UseHangfireDashboard();
     app.UseHttpsRedirection();
+    app.UseStaticFiles();
+    app.UseCors("AllowAll");
     app.UseAuthorization();
     app.MapControllers();
 

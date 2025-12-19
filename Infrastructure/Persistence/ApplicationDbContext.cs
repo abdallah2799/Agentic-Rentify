@@ -2,6 +2,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Agentic_Rentify.Core.Entities;
+
+namespace Agentic_Rentify.Infrastructure.Persistence;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
@@ -28,6 +31,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<IdentityUserLogin<string>>(b => b.ToTable("UserLogins"));
         modelBuilder.Entity<IdentityRoleClaim<string>>(b => b.ToTable("RoleClaims"));
         modelBuilder.Entity<IdentityUserToken<string>>(b => b.ToTable("UserTokens"));
+
     }
 
 }

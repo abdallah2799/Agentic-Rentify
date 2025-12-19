@@ -1,4 +1,7 @@
-﻿// Core -> Entities -> Trip.cs
+﻿using Agentic_Rentify.Core.Entities;
+
+namespace Agentic_Rentify.Core.Entities;
+
 public class Trip : BaseEntity
 {
     public string Title { get; set; } = string.Empty;
