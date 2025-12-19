@@ -22,7 +22,7 @@ public class Attraction : BaseEntity
 
     // Navigation Properties
     public List<AttractionImage> Images { get; set; } = [];
-    public List<Category> Categories { get; set; } = [];
+    public List<string> Categories { get; set; } = [];
 
     // Complex JSON Fields
     public AttractionReviewSummary ReviewSummary { get; set; } = new();
