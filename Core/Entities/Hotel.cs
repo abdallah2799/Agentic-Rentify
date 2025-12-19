@@ -1,4 +1,7 @@
-﻿// Core -> Entities -> Hotel.cs
+﻿using Agentic_Rentify.Core.Entities;
+
+namespace Agentic_Rentify.Core.Entities;
+
 public class Hotel : BaseEntity
 {
     public string Name { get; set; } = string.Empty;

@@ -1,5 +1,5 @@
 using Agentic_Rentify.Core.Entities;
-using Agentic_Rentify.Core.Interfaces;
+using Agentic_Rentify.Application.Interfaces;
 using AutoMapper;
 using MediatR;
 

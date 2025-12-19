@@ -1,4 +1,4 @@
-﻿// Infrastructure -> DependencyInjection.cs
+// Infrastructure -> DependencyInjection.cs
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Hangfire;
 using Hangfire.SqlServer;
 
-using Agentic_Rentify.Core.Interfaces;
+using Agentic_Rentify.Application.Interfaces;
 using Agentic_Rentify.Infrastructure.Repositories;
 using Agentic_Rentify.Infrastructure.Persistence;
 
@@ -17,7 +17,7 @@ public static class InfrastructureExtensions
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-        // تسجيل الـ Identity
+        // ????? ??? Identity
         // Identity Configuration
         services.AddIdentity<ApplicationUser, IdentityRole>(options => 
         {
