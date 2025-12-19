@@ -39,6 +39,25 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
             .ToListAsync();
     }
 
+    public async Task<(IReadOnlyList<T> Items, int TotalCount)> GetPagedAppAsync(int page, int size, Expression<Func<T, bool>>? predicate = null)
+    {
+        var query = _context.Set<T>().AsNoTracking();
+
+        if (predicate != null)
+        {
+            query = query.Where(predicate);
+        }
+
+        int totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((page - 1) * size)
+            .Take(size)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
+
     public async Task<T> AddAsync(T entity)
     {
         await _context.Set<T>().AddAsync(entity);
