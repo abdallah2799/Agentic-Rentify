@@ -1,6 +1,7 @@
 ﻿// Infrastructure -> Persistence -> Configurations -> HotelConfiguration.cs
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Agentic_Rentify.Core.Entities;
 
 public class HotelConfiguration : IEntityTypeConfiguration<Hotel>
 {

@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Identity;
 using Hangfire;
 using Hangfire.SqlServer;
 
+using Agentic_Rentify.Core.Interfaces;
+using Agentic_Rentify.Infrastructure.Repositories;
+using Agentic_Rentify.Infrastructure.Persistence;
+
 public static class InfrastructureExtensions
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
@@ -59,6 +63,10 @@ public static class InfrastructureExtensions
         services.AddTransient<IEmailService, EmailService>();
         services.AddScoped<CloudinaryService>();
         services.AddScoped<EmailTemplateService>();
+
+        // Repositories & UnitOfWork
+        services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         // Hangfire Configuration
         // Hangfire Configuration

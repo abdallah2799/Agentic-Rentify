@@ -1,6 +1,7 @@
 ﻿// Infrastructure -> Persistence -> Configurations -> AttractionConfiguration.cs
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Agentic_Rentify.Core.Entities;
 
 public class AttractionConfiguration : IEntityTypeConfiguration<Attraction>
 {

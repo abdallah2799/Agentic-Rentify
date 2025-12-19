@@ -22,7 +22,8 @@ try
     builder.Services.AddApplicationServices();
     builder.Services.AddInfrastructureServices(builder.Configuration);
 
-    builder.Services.AddTransient<GlobalExceptionHandler>(); // Register Middleware
+    // builder.Services.AddTransient<Agentic_Rentify.Api.Middleware.GlobalExceptionHandlerMiddleware>(); // Middleware registered via UseMiddleware does not need DI registration if strictly conventional.
+    // Removed to fix RequestDelegate resolution error.
     builder.Services.AddControllers();
 
     // 3. دعم الـ OpenApi (الأساسي لـ Scalar)
@@ -53,7 +54,7 @@ try
         });
     }
     app.UseSerilogRequestLogging();
-    app.UseMiddleware<GlobalExceptionHandler>(); // Use Middleware
+    app.UseMiddleware<Agentic_Rentify.Api.Middleware.GlobalExceptionHandlerMiddleware>(); // Use Middleware
     app.UseHangfireDashboard();
     app.UseHttpsRedirection();
     app.UseStaticFiles();
