@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using FluentValidation;
+using Stripe;
 
 namespace Agentic_Rentify.Api.Middleware;
 
@@ -49,6 +50,18 @@ public class GlobalExceptionHandlerMiddleware
                 errors = validationErrors
             };
             
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
+        else if (ex is StripeException stripeException)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            var response = new
+            {
+                statusCode = context.Response.StatusCode,
+                message = stripeException.Message,
+                stripeError = stripeException.StripeError?.Message
+            };
+
             await context.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
         else

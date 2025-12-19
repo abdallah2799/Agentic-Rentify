@@ -9,11 +9,15 @@ using Hangfire.SqlServer;
 using Agentic_Rentify.Application.Interfaces;
 using Agentic_Rentify.Infrastructure.Repositories;
 using Agentic_Rentify.Infrastructure.Persistence;
+using Agentic_Rentify.Infrastructure.Services;
+using Agentic_Rentify.Infrastructure.Settings;
 
 public static class InfrastructureExtensions
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
+
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
@@ -63,6 +67,7 @@ public static class InfrastructureExtensions
         services.AddTransient<IEmailService, EmailService>();
         services.AddScoped<CloudinaryService>();
         services.AddScoped<EmailTemplateService>();
+        services.AddScoped<IPaymentService, StripePaymentService>();
 
         // Repositories & UnitOfWork
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
