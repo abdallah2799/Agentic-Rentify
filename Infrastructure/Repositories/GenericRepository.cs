@@ -33,6 +33,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     public async Task<IReadOnlyList<T>> GetPagedResponseAsync(int page, int size)
     {
         return await _context.Set<T>()
+            .OrderBy(x => x.Id)
             .Skip((page - 1) * size)
             .Take(size)
             .AsNoTracking()
@@ -51,6 +52,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
         int totalCount = await query.CountAsync();
 
         var items = await query
+            .OrderBy(x => x.Id)
             .Skip((page - 1) * size)
             .Take(size)
             .ToListAsync();
