@@ -65,7 +65,13 @@ public class CreateAttractionCommandHandler : IRequestHandler<CreateAttractionCo
         await _unitOfWork.CompleteAsync();
 
         var text = string.Join(" ", new[] { attraction.Name, attraction.Description, attraction.Overview });
-        await _mediator.Publish(new EntitySavedToVectorDbEvent(attraction.Id, "Attraction", text), cancellationToken);
+        await _mediator.Publish(new EntitySavedToVectorDbEvent(
+            attraction.Id,
+            "Attraction",
+            text,
+            name: attraction.Name,
+            price: attraction.Price,
+            city: attraction.City), cancellationToken);
 
         return attraction.Id;
     }

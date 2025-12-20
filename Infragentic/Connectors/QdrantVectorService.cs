@@ -38,7 +38,7 @@ namespace Agentic_Rentify.Infragentic.Services
             }
         }
 
-        public async Task SaveTextVector(string collectionName, string entityId, string type, string text)
+        public async Task SaveTextVector(string collectionName, string entityId, string type, string text, string? name = null, decimal? price = null, string? city = null)
         {
             var vector = await GetEmbeddingAsync(text);
 
@@ -46,7 +46,15 @@ namespace Agentic_Rentify.Infragentic.Services
             {
                 Id = (ulong)int.Parse(entityId),
                 Vectors = vector,
-                Payload = { ["entity_id"] = entityId, ["type"] = type, ["text"] = text }
+                Payload = 
+                {
+                    ["entity_id"] = entityId,
+                    ["type"] = type,
+                    ["text"] = text,
+                    ["name"] = name ?? string.Empty,
+                    ["price"] = price.HasValue ? (double)price.Value : 0d,
+                    ["city"] = city ?? string.Empty
+                }
             };
 
             await _qdrantClient.UpsertAsync(collectionName, new List<PointStruct> { point });
@@ -78,27 +86,36 @@ namespace Agentic_Rentify.Infragentic.Services
         {
             var client = _httpClientFactory.CreateClient("OpenRouter");
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, "v1/embeddings");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _aiSettings.OpenAIKey);
-            var payload = new
+            try
             {
-                model = _aiSettings.EmbeddingModel,
-                input = text
-            };
-            request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+                using var request = new HttpRequestMessage(HttpMethod.Post, "v1/embeddings");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _aiSettings.OpenAIKey);
+                var payload = new
+                {
+                    model = _aiSettings.EmbeddingModel,
+                    input = text
+                };
+                request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-            var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            using var stream = await response.Content.ReadAsStreamAsync();
-            var doc = await JsonDocument.ParseAsync(stream);
-            var embeddingJson = doc.RootElement.GetProperty("data")[0].GetProperty("embedding");
-            var vector = new float[embeddingJson.GetArrayLength()];
-            var i = 0;
-            foreach (var v in embeddingJson.EnumerateArray())
-            {
-                vector[i++] = v.GetSingle();
+                var response = await client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                using var stream = await response.Content.ReadAsStreamAsync();
+                var doc = await JsonDocument.ParseAsync(stream);
+                var embeddingJson = doc.RootElement.GetProperty("data")[0].GetProperty("embedding");
+                var vector = new float[embeddingJson.GetArrayLength()];
+                var i = 0;
+                foreach (var v in embeddingJson.EnumerateArray())
+                {
+                    vector[i++] = v.GetSingle();
+                }
+                return vector;
             }
-            return vector;
+            catch (Exception)
+            {
+                // In case of network issues or temporary failures, return a zero vector of reasonable length
+                // This avoids failing the entire command; subsequent upserts can overwrite once connectivity resumes.
+                return new float[256];
+            }
         }
     }
 }

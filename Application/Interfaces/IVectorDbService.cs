@@ -8,7 +8,7 @@ namespace Agentic_Rentify.Application.Interfaces
     public interface IVectorDbService
     {
         Task CreateCollectionIfNotExists(string collectionName);
-        Task SaveTextVector(string collectionName, string entityId, string type, string text);
+        Task SaveTextVector(string collectionName, string entityId, string type, string text, string? name = null, decimal? price = null, string? city = null);
         Task<List<VectorSearchResult>> SearchByTextAsync(string collectionName, string description, int topK = 5);
     }
 }

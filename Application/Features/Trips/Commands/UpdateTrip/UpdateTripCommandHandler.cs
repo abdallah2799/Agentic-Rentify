@@ -23,7 +23,13 @@ public class UpdateTripCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IM
         await unitOfWork.CompleteAsync();
 
         var text = string.Join(" ", new[] { trip.Title, trip.Description });
-        await mediator.Publish(new EntitySavedToVectorDbEvent(trip.Id, "Trip", text), cancellationToken);
+        await mediator.Publish(new EntitySavedToVectorDbEvent(
+            trip.Id,
+            "Trip",
+            text,
+            name: trip.Title,
+            price: trip.Price,
+            city: null), cancellationToken);
 
         return trip.Id;
     }

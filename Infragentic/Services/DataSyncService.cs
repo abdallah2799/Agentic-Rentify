@@ -23,7 +23,7 @@ namespace Agentic_Rentify.Infragentic.Services
             foreach (var a in attractions)
             {
                 var text = string.Join(" ", new[] { a.Name, a.Description, a.Overview });
-                await _vectorDbService.SaveTextVector(collectionName, a.Id.ToString(), "Attraction", text);
+                await _vectorDbService.SaveTextVector(collectionName, a.Id.ToString(), "Attraction", text, a.Name, a.Price, a.City);
             }
 
             // Sync Trips
@@ -31,7 +31,23 @@ namespace Agentic_Rentify.Infragentic.Services
             foreach (var t in trips)
             {
                 var text = string.Join(" ", new[] { t.Title, t.Description });
-                await _vectorDbService.SaveTextVector(collectionName, t.Id.ToString(), "Trip", text);
+                await _vectorDbService.SaveTextVector(collectionName, t.Id.ToString(), "Trip", text, t.Title, t.Price, null);
+            }
+
+            // Sync Hotels
+            var hotels = await _unitOfWork.Repository<Hotel>().ListAllAsync();
+            foreach (var h in hotels)
+            {
+                var text = string.Join(" ", new[] { h.Name, h.Description });
+                await _vectorDbService.SaveTextVector(collectionName, h.Id.ToString(), "Hotel", text, h.Name, h.BasePrice, h.City);
+            }
+
+            // Sync Cars
+            var cars = await _unitOfWork.Repository<Car>().ListAllAsync();
+            foreach (var c in cars)
+            {
+                var text = string.Join(" ", new[] { c.Name, c.Description, c.Overview });
+                await _vectorDbService.SaveTextVector(collectionName, c.Id.ToString(), "Car", text, c.Name, c.Price, null);
             }
         }
     }
