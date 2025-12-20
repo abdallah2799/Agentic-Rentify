@@ -1,5 +1,6 @@
 using Agentic_Rentify.Core.Entities;
 using Agentic_Rentify.Application.Interfaces;
+using Agentic_Rentify.Application.Features.SyncVector;
 using MediatR;
 
 namespace Agentic_Rentify.Application.Features.Attractions.Commands.DeleteAttraction;
@@ -7,10 +8,12 @@ namespace Agentic_Rentify.Application.Features.Attractions.Commands.DeleteAttrac
 public class DeleteAttractionCommandHandler : IRequestHandler<DeleteAttractionCommand, bool>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMediator _mediator;
 
-    public DeleteAttractionCommandHandler(IUnitOfWork unitOfWork)
+    public DeleteAttractionCommandHandler(IUnitOfWork unitOfWork, IMediator mediator)
     {
         _unitOfWork = unitOfWork;
+        _mediator = mediator;
     }
 
     public async Task<bool> Handle(DeleteAttractionCommand request, CancellationToken cancellationToken)
@@ -23,14 +26,14 @@ public class DeleteAttractionCommandHandler : IRequestHandler<DeleteAttractionCo
             throw new Exception($"Attraction with ID {request.Id} not found.");
         }
 
-        // Hard Delete or Soft Delete based on requirements. 
-        // BaseEntity usually has IsDeleted.
+        // Soft Delete
         attraction.IsDeleted = true;
         await repository.UpdateAsync(attraction);
-        // OR await repository.DeleteAsync(attraction); if hard delete.
-        // Given 'IsDeleted' property in BaseEntity/migration, Soft Delete is preferred.
         
         await _unitOfWork.CompleteAsync();
+
+        await _mediator.Publish(new EntityDeletedFromVectorDbEvent(attraction.Id, "Attraction"), cancellationToken);
+
         return true;
     }
 }

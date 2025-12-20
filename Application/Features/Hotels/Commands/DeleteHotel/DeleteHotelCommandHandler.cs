@@ -1,10 +1,11 @@
 using Agentic_Rentify.Core.Entities;
 using Agentic_Rentify.Application.Interfaces;
+using Agentic_Rentify.Application.Features.SyncVector;
 using MediatR;
 
 namespace Agentic_Rentify.Application.Features.Hotels.Commands.DeleteHotel;
 
-public class DeleteHotelCommandHandler(IUnitOfWork unitOfWork) 
+public class DeleteHotelCommandHandler(IUnitOfWork unitOfWork, IMediator mediator) 
     : IRequestHandler<DeleteHotelCommand, int>
 {
     public async Task<int> Handle(DeleteHotelCommand request, CancellationToken cancellationToken)
@@ -17,6 +18,8 @@ public class DeleteHotelCommandHandler(IUnitOfWork unitOfWork)
 
         await unitOfWork.Repository<Hotel>().DeleteAsync(hotel);
         await unitOfWork.CompleteAsync();
+
+        await mediator.Publish(new EntityDeletedFromVectorDbEvent(hotel.Id, "Hotel"), cancellationToken);
 
         return hotel.Id;
     }

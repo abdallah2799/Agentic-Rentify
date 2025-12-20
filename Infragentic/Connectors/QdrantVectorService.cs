@@ -60,6 +60,12 @@ namespace Agentic_Rentify.Infragentic.Services
             await _qdrantClient.UpsertAsync(collectionName, new List<PointStruct> { point });
         }
 
+        public async Task DeletePointAsync(string collectionName, string entityId, string entityType)
+        {
+            var id = (ulong)int.Parse(entityId);
+            await _qdrantClient.DeleteAsync(collectionName, new[] { id });
+        }
+
         public async Task<List<VectorSearchResult>> SearchByTextAsync(string collectionName, string description, int topK = 5)
         {
             var vector = await GetEmbeddingAsync(description);
