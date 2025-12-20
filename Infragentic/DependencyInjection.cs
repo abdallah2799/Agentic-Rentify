@@ -49,8 +49,8 @@ public static class InfragenticExtensions
             );
 
             // Create plugin instances with resolved dependencies and add them
-            var discoveryPlugin = new DiscoveryPlugin(mediator);
-            var bookingPlugin = new BookingPlugin(mediator);
+            var discoveryPlugin = new DiscoveryPlugin(serviceScopeFactory);
+            var bookingPlugin = new BookingPlugin(serviceScopeFactory);
 
             kernelBuilder.Plugins.AddFromObject(discoveryPlugin, "Discovery");
             kernelBuilder.Plugins.AddFromObject(bookingPlugin, "Booking");

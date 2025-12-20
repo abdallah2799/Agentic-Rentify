@@ -1,11 +1,12 @@
 using Agentic_Rentify.Application.Features.Bookings.Commands.CreateBooking;
+using Microsoft.Extensions.DependencyInjection;
 using MediatR;
 using Microsoft.SemanticKernel;
 using System.ComponentModel;
 
 namespace Agentic_Rentify.Infragentic.Plugins;
 
-public class BookingPlugin(IMediator mediator)
+public class BookingPlugin(IServiceScopeFactory serviceScopeFactory)
 {
     [KernelFunction("create_booking")]
     [Description("Creates a new booking for a trip, hotel, car, or attraction and initiates the Stripe payment checkout. Returns the Stripe session URL that the user must visit to complete payment. IMPORTANT: Always return the sessionUrl to the user so they can pay.")]
@@ -17,6 +18,9 @@ public class BookingPlugin(IMediator mediator)
         [Description("End date of the booking in ISO 8601 format. Optional for single-day bookings.")] DateTime? endDate,
         [Description("Total price in USD for the booking")] decimal totalPrice)
     {
+        using var scope = serviceScopeFactory.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        
         var command = new CreateBookingCommand
         {
             UserId = userId,
