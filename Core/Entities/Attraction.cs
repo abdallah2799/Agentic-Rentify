@@ -1,4 +1,4 @@
-﻿using Agentic_Rentify.Core.Entities; // For UserReview if generic
+﻿using Agentic_Rentify.Core.Common;
 // Actually if in same namespace, no using needed for sibling types.
 // But BaseEntity might need specific using if not in same namespace.
 // Assuming BaseEntity is in Agentic_Rentify.Core.Entities or Common.

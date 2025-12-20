@@ -3,10 +3,11 @@ using Agentic_Rentify.Core.Entities;
 using Agentic_Rentify.Application.Interfaces;
 using AutoMapper;
 using MediatR;
+using Agentic_Rentify.Application.Features.SyncVector;
 
 namespace Agentic_Rentify.Application.Features.Trips.Commands.UpdateTrip;
 
-public class UpdateTripCommandHandler(IUnitOfWork unitOfWork, IMapper mapper) 
+public class UpdateTripCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IMediator mediator) 
     : IRequestHandler<UpdateTripCommand, int>
 {
     public async Task<int> Handle(UpdateTripCommand request, CancellationToken cancellationToken)
@@ -20,6 +21,9 @@ public class UpdateTripCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
         mapper.Map(request, trip);
         await unitOfWork.Repository<Trip>().UpdateAsync(trip);
         await unitOfWork.CompleteAsync();
+
+        var text = string.Join(" ", new[] { trip.Title, trip.Description });
+        await mediator.Publish(new EntitySavedToVectorDbEvent(trip.Id, "Trip", text), cancellationToken);
 
         return trip.Id;
     }

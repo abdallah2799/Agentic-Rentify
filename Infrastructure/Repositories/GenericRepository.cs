@@ -1,5 +1,5 @@
 using System.Linq.Expressions;
-using Agentic_Rentify.Core.Entities;
+using Agentic_Rentify.Core.Common;
 using Agentic_Rentify.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Agentic_Rentify.Infrastructure.Persistence;

@@ -1,3 +1,4 @@
+using Agentic_Rentify.Core.Common;
 using Agentic_Rentify.Core.Enums;
 
 namespace Agentic_Rentify.Core.Entities;

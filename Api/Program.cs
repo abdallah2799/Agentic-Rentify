@@ -23,6 +23,7 @@ try
     builder.Services.AddApplicationServices();
     builder.Services.AddInfrastructureServices(builder.Configuration);
     builder.Services.AddInfragenticServices(builder.Configuration);
+    builder.Services.AddHostedService<Agentic_Rentify.Api.Services.VectorSyncHostedService>();
 
     // builder.Services.AddTransient<Agentic_Rentify.Api.Middleware.GlobalExceptionHandlerMiddleware>(); // Middleware registered via UseMiddleware does not need DI registration if strictly conventional.
     // Removed to fix RequestDelegate resolution error.

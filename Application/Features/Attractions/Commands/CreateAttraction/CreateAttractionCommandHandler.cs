@@ -2,6 +2,7 @@ using Agentic_Rentify.Core.Entities;
 using Agentic_Rentify.Application.Interfaces;
 using AutoMapper;
 using MediatR;
+using Agentic_Rentify.Application.Features.SyncVector;
 
 namespace Agentic_Rentify.Application.Features.Attractions.Commands.CreateAttraction;
 
@@ -9,11 +10,13 @@ public class CreateAttractionCommandHandler : IRequestHandler<CreateAttractionCo
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IMediator _mediator;
 
-    public CreateAttractionCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public CreateAttractionCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IMediator mediator)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _mediator = mediator;
     }
 
     public async Task<int> Handle(CreateAttractionCommand request, CancellationToken cancellationToken)
@@ -60,6 +63,9 @@ public class CreateAttractionCommandHandler : IRequestHandler<CreateAttractionCo
 
         await _unitOfWork.Repository<Attraction>().AddAsync(attraction);
         await _unitOfWork.CompleteAsync();
+
+        var text = string.Join(" ", new[] { attraction.Name, attraction.Description, attraction.Overview });
+        await _mediator.Publish(new EntitySavedToVectorDbEvent(attraction.Id, "Attraction", text), cancellationToken);
 
         return attraction.Id;
     }

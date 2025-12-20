@@ -78,7 +78,7 @@ namespace Agentic_Rentify.Infragentic.Services
         {
             var client = _httpClientFactory.CreateClient("OpenRouter");
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, "embeddings");
+            using var request = new HttpRequestMessage(HttpMethod.Post, "v1/embeddings");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _aiSettings.OpenAIKey);
             var payload = new
             {
