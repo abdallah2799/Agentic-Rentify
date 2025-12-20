@@ -2,6 +2,7 @@ using Agentic_Rentify.Application.Features.Attractions.Queries.GetAllAttractions
 using Agentic_Rentify.Application.Features.Trips.DTOs;
 using Agentic_Rentify.Application.Features.Trips.Queries.GetAllTrips;
 using Agentic_Rentify.Application.Features.Trips.Queries.GetTripById;
+using Agentic_Rentify.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using MediatR;
 using Microsoft.SemanticKernel;
@@ -64,5 +65,20 @@ public class DiscoveryPlugin(IServiceScopeFactory serviceScopeFactory)
         var query = new GetTripByIdQuery(tripId);
         var result = await mediator.Send(query);
         return System.Text.Json.JsonSerializer.Serialize(result);
+    }
+
+    [KernelFunction("semantic_search")]
+    [Description("Performs semantic search over attractions and trips using vector embeddings.")]
+    public async Task<string> SemanticSearchAsync(
+        [Description("A natural-language description of what you are looking for, e.g., 'romantic quiet places'.")] string description,
+        [Description("Maximum number of results to return, defaults to 5")] int topK = 5)
+    {
+        using var scope = serviceScopeFactory.CreateScope();
+        var vectorService = scope.ServiceProvider.GetRequiredService<IVectorDbService>();
+
+        const string collection = "rentify_memory";
+        await vectorService.CreateCollectionIfNotExists(collection);
+        var results = await vectorService.SearchByTextAsync(collection, description, topK);
+        return System.Text.Json.JsonSerializer.Serialize(results);
     }
 }

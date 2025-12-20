@@ -1,11 +1,13 @@
 using Agentic_Rentify.Infragentic.Settings;
 using Agentic_Rentify.Infragentic.Plugins;
 using Agentic_Rentify.Infragentic.Filters;
-using Agentic_Rentify.Infragentic.Interfaces;
 using Agentic_Rentify.Infragentic.Services;
+using Agentic_Rentify.Application.Interfaces;
+using Agentic_Rentify.Infragentic.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Qdrant.Client;
 
 namespace Agentic_Rentify.Infragentic;
@@ -43,6 +45,8 @@ public static class InfragenticExtensions
                 httpClient: openRouterClient
             );
 
+            // Embeddings are accessed via OpenRouter HTTP client directly in QdrantVectorService
+
             // Register agent invocation filter for observability
             kernelBuilder.Services.AddSingleton<IFunctionInvocationFilter>(
                 new AgentInvocationFilter(serviceScopeFactory)
@@ -67,6 +71,10 @@ public static class InfragenticExtensions
                 https: false
             );
         });
+
+        // Register Vector DB service
+        services.AddScoped<IVectorDbService, QdrantVectorService>();
+        services.AddScoped<DataSyncService>();
 
         // Register AI Services
         services.AddScoped<IChatAiService, ChatAiService>();
