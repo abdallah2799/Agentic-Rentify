@@ -1,6 +1,7 @@
 ﻿using Serilog;
 using Scalar.AspNetCore;
 using Hangfire;
+using Agentic_Rentify.Infragentic;
 
 // 1. إعداد الـ Logger المبدئي
 Log.Logger = new LoggerConfiguration()
@@ -21,6 +22,7 @@ try
 
     builder.Services.AddApplicationServices();
     builder.Services.AddInfrastructureServices(builder.Configuration);
+    builder.Services.AddInfragenticServices(builder.Configuration);
 
     // builder.Services.AddTransient<Agentic_Rentify.Api.Middleware.GlobalExceptionHandlerMiddleware>(); // Middleware registered via UseMiddleware does not need DI registration if strictly conventional.
     // Removed to fix RequestDelegate resolution error.
