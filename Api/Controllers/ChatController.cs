@@ -1,5 +1,6 @@
 using Agentic_Rentify.Infragentic.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Agentic_Rentify.Api.Controllers;
 
@@ -19,6 +20,7 @@ public class ChatController(IChatAiService chatAiService) : ControllerBase
     /// - Provide helpful travel recommendations
     /// 
     /// The conversation array maintains context across messages.
+    /// All function calls are logged for observability.
     /// </remarks>
     [HttpPost]
     public async Task<IActionResult> SendMessage([FromBody] ChatRequest request)
@@ -28,7 +30,10 @@ public class ChatController(IChatAiService chatAiService) : ControllerBase
             return BadRequest(new { message = "Message is required" });
         }
 
-        var response = await chatAiService.GetResponseAsync(request.Message, request.Conversation);
+        // Extract userId from JWT token
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        var response = await chatAiService.GetResponseAsync(request.Message, userId, request.Conversation);
         
         // Build updated conversation history
         var updatedConversation = new List<ChatMessage>(request.Conversation ?? new List<ChatMessage>());

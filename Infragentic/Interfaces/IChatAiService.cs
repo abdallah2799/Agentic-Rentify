@@ -2,7 +2,7 @@ namespace Agentic_Rentify.Infragentic.Interfaces;
 
 public interface IChatAiService
 {
-    Task<string> GetResponseAsync(string userMessage, List<ChatMessage>? conversationHistory = null);
+    Task<string> GetResponseAsync(string userMessage, string? userId = null, List<ChatMessage>? conversationHistory = null);
 }
 
 public class ChatMessage

@@ -15,6 +15,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Hotel> Hotels { get; set; }
     public DbSet<Car> Cars { get; set; }
     public DbSet<Booking> Bookings { get; set; }
+    public DbSet<AgentExecutionLog> AgentExecutionLogs { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

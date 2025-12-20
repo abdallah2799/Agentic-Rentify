@@ -1,5 +1,6 @@
 using Agentic_Rentify.Infragentic.Settings;
 using Agentic_Rentify.Infragentic.Plugins;
+using Agentic_Rentify.Infragentic.Filters;
 using Agentic_Rentify.Infragentic.Interfaces;
 using Agentic_Rentify.Infragentic.Services;
 using Microsoft.Extensions.Configuration;
@@ -31,6 +32,7 @@ public static class InfragenticExtensions
             var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
             var openRouterClient = httpClientFactory.CreateClient("OpenRouter");
             var mediator = sp.GetRequiredService<MediatR.IMediator>();
+            var serviceScopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
 
             var kernelBuilder = Kernel.CreateBuilder();
 
@@ -39,6 +41,11 @@ public static class InfragenticExtensions
                 modelId: aiSettings.ChatModel,
                 apiKey: aiSettings.OpenAIKey,
                 httpClient: openRouterClient
+            );
+
+            // Register agent invocation filter for observability
+            kernelBuilder.Services.AddSingleton<IFunctionInvocationFilter>(
+                new AgentInvocationFilter(serviceScopeFactory)
             );
 
             // Create plugin instances with resolved dependencies and add them

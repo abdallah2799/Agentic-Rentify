@@ -7,7 +7,7 @@ namespace Agentic_Rentify.Infragentic.Services;
 
 public class ChatAiService(Kernel kernel) : IChatAiService
 {
-    public async Task<string> GetResponseAsync(string userMessage, List<ChatMessage>? conversationHistory = null)
+    public async Task<string> GetResponseAsync(string userMessage, string? userId = null, List<ChatMessage>? conversationHistory = null)
     {
         var executionSettings = new OpenAIPromptExecutionSettings
         {
@@ -47,6 +47,14 @@ Key behaviors:
         chatHistory.AddUserMessage(userMessage);
 
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        
+        // Create invoke options with userId for filter access
+        var invokeOptions = new KernelArguments(executionSettings);
+        if (!string.IsNullOrWhiteSpace(userId))
+        {
+            invokeOptions["UserId"] = userId;
+        }
+        
         var result = await chatCompletionService.GetChatMessageContentAsync(
             chatHistory,
             executionSettings,

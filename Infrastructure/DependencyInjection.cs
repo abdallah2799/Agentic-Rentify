@@ -68,6 +68,7 @@ public static class InfrastructureExtensions
         services.AddScoped<CloudinaryService>();
         services.AddScoped<EmailTemplateService>();
         services.AddScoped<IPaymentService, StripePaymentService>();
+        services.AddScoped<IAgentLogRepository, AgentLogRepository>();
 
         // Repositories & UnitOfWork
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
