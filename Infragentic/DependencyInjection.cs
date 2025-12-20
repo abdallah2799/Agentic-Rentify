@@ -1,5 +1,7 @@
 using Agentic_Rentify.Infragentic.Settings;
 using Agentic_Rentify.Infragentic.Plugins;
+using Agentic_Rentify.Infragentic.Interfaces;
+using Agentic_Rentify.Infragentic.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -28,6 +30,7 @@ public static class InfragenticExtensions
         {
             var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
             var openRouterClient = httpClientFactory.CreateClient("OpenRouter");
+            var mediator = sp.GetRequiredService<MediatR.IMediator>();
 
             var kernelBuilder = Kernel.CreateBuilder();
 
@@ -38,9 +41,12 @@ public static class InfragenticExtensions
                 httpClient: openRouterClient
             );
 
-            // Register plugins
-            kernelBuilder.Plugins.AddFromType<DiscoveryPlugin>("Discovery");
-            kernelBuilder.Plugins.AddFromType<BookingPlugin>("Booking");
+            // Create plugin instances with resolved dependencies and add them
+            var discoveryPlugin = new DiscoveryPlugin(mediator);
+            var bookingPlugin = new BookingPlugin(mediator);
+
+            kernelBuilder.Plugins.AddFromObject(discoveryPlugin, "Discovery");
+            kernelBuilder.Plugins.AddFromObject(bookingPlugin, "Booking");
 
             return kernelBuilder.Build();
         });
@@ -54,6 +60,9 @@ public static class InfragenticExtensions
                 https: false
             );
         });
+
+        // Register AI Services
+        services.AddScoped<IChatAiService, ChatAiService>();
 
         return services;
     }
