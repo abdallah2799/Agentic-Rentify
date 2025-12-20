@@ -1,4 +1,5 @@
 using Agentic_Rentify.Infragentic.Settings;
+using Agentic_Rentify.Infragentic.Plugins;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -36,6 +37,10 @@ public static class InfragenticExtensions
                 apiKey: aiSettings.OpenAIKey,
                 httpClient: openRouterClient
             );
+
+            // Register plugins
+            kernelBuilder.Plugins.AddFromType<DiscoveryPlugin>("Discovery");
+            kernelBuilder.Plugins.AddFromType<BookingPlugin>("Booking");
 
             return kernelBuilder.Build();
         });
