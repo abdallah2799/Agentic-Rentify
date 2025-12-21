@@ -69,6 +69,10 @@ public static class InfrastructureExtensions
         services.AddScoped<EmailTemplateService>();
         services.AddScoped<IPaymentService, StripePaymentService>();
         services.AddScoped<IAgentLogRepository, AgentLogRepository>();
+        
+        // Photo & Image Management Services
+        services.AddScoped<IPhotoService, PhotoService>();
+        services.AddScoped<IImageCleanupService, ImageCleanupService>();
 
         // Repositories & UnitOfWork
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

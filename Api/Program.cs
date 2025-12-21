@@ -1,6 +1,7 @@
 ﻿using Serilog;
 using Scalar.AspNetCore;
 using Hangfire;
+using Hangfire.Common;
 using Agentic_Rentify.Infragentic;
 
 // 1. إعداد الـ Logger المبدئي
@@ -121,6 +122,27 @@ Comprehensive REST API for an AI-powered travel booking platform with intelligen
     });
 
     var app = builder.Build();
+
+    // Configure Hangfire Recurring Jobs (using service-based API, not static)
+    using (var scope = app.Services.CreateScope())
+    {
+        var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+        var imageCleanupService = scope.ServiceProvider.GetRequiredService<Agentic_Rentify.Application.Interfaces.IImageCleanupService>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+        // Schedule hourly image cleanup job
+        recurringJobManager.AddOrUpdate(
+            recurringJobId: "image-cleanup-hourly",
+            methodCall: () => imageCleanupService.CleanupOrphanedImagesAsync(),
+            cronExpression: Cron.Hourly(),
+            options: new RecurringJobOptions
+            {
+                TimeZone = TimeZoneInfo.Utc
+            }
+        );
+
+        logger.LogInformation("Hangfire recurring job 'image-cleanup-hourly' scheduled to run every hour (UTC).");
+    }
 
     app.UseSerilogRequestLogging();
     app.UseMiddleware<Agentic_Rentify.Api.Middleware.GlobalExceptionHandlerMiddleware>(); // Use Middleware
