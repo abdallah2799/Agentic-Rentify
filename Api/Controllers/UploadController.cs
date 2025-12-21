@@ -1,10 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 
+namespace Agentic_Rentify.Api.Controllers;
+
 /// <summary>
 /// Handles media uploads to cloud storage (Cloudinary).
 /// </summary>
+/// <remarks>
+/// Provides endpoints for uploading images (logos, profile pictures, etc.) to Cloudinary CDN.
+/// Supports common image formats with size and type validation.
+/// </remarks>
 [Route("api/[controller]")]
 [ApiController]
+[Produces("application/json")]
+[ApiExplorerSettings(GroupName = "Admin")]
 public class UploadController : ControllerBase
 {
     private readonly CloudinaryService _cloudinaryService;

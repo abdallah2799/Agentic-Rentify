@@ -2,11 +2,26 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
+namespace Agentic_Rentify.Api.Controllers;
+
 /// <summary>
-/// Manages user authentication, registration, and security operations (Login, Register, OTP, Password Management).
+/// User authentication and account management
 /// </summary>
+/// <remarks>
+/// Provides complete authentication flow including registration, login (email/password and Google OAuth),
+/// OTP verification, password management, and JWT token refresh.
+/// 
+/// **Security Features:**
+/// - JWT access tokens with refresh token rotation
+/// - Account lockout after 5 failed login attempts (15 min duration)
+/// - Rate limiting on sensitive endpoints
+/// - Email OTP verification for account activation
+/// - Secure password reset flow
+/// </remarks>
 [Route("api/[controller]")]
 [ApiController]
+[Produces("application/json")]
+[ApiExplorerSettings(GroupName = "Authentication")]
 public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -17,15 +32,23 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Registers a new user.
+    /// Registers a new user account.
     /// </summary>
     /// <remarks>
     /// Creates a new user account, generates an OTP, and sends a verification email.
-    /// Password must contain at least 8 characters, one uppercase, one lowercase, one number, and one special character.
+    /// 
+    /// **Password Requirements:**
+    /// - Minimum 8 characters
+    /// - At least one uppercase letter
+    /// - At least one lowercase letter
+    /// - At least one number
+    /// - At least one special character
+    /// 
+    /// After registration, the user must verify their email using the POST /api/Auth/verify-otp endpoint.
     /// </remarks>
-    /// <param name="command">The registration details including email, password, and personal info.</param>
-    /// <returns>AuthResponseDto containing tokens and user info.</returns>
-    /// <response code="200">User registered successfully.</response>
+    /// <param name="command">Registration details including email, password, and personal info.</param>
+    /// <returns>AuthResponseDto containing JWT tokens and user info.</returns>
+    /// <response code="200">User registered successfully. Check email for OTP.</response>
     /// <response code="400">Invalid input or user already exists.</response>
     [HttpPost("register")]
     [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
@@ -36,14 +59,21 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Logs in an existing user.
+    /// Authenticates an existing user.
     /// </summary>
     /// <remarks>
-    /// Authenticates a user and returns a JWT access token and refresh token.
-    /// Rate limiting applies. Account lockouts occur after 5 failed attempts (15 min duration).
+    /// Validates credentials and returns JWT access token and refresh token.
+    /// 
+    /// **Security:**
+    /// - Rate limiting applies
+    /// - Account lockouts occur after 5 failed attempts (15 min duration)
+    /// - Tokens expire after configured duration (check appsettings.json)
+    /// 
+    /// Use the returned access token in the Authorization header for protected endpoints:
+    /// `Authorization: Bearer {accessToken}`
     /// </remarks>
     /// <param name="command">Credentials (Email and Password).</param>
-    /// <returns>AuthResponseDto with JWT token.</returns>
+    /// <returns>AuthResponseDto with JWT access token and refresh token.</returns>
     /// <response code="200">Login successful.</response>
     /// <response code="401">Invalid credentials or account locked.</response>
     [HttpPost("login")]
@@ -55,13 +85,19 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Logs in or registers a user using Google OAuth.
+    /// Authenticates or registers a user using Google OAuth.
     /// </summary>
     /// <remarks>
     /// Validates the Google ID Token and creates/returns a user session.
+    /// If the user doesn't exist, a new account is automatically created.
+    /// 
+    /// **Frontend Integration:**
+    /// 1. Use Google Sign-In SDK to obtain ID token
+    /// 2. Send token to this endpoint
+    /// 3. Store returned JWT tokens
     /// </remarks>
-    /// <param name="command">Google ID Token.</param>
-    /// <returns>AuthResponseDto with JWT token.</returns>
+    /// <param name="command">Google ID Token obtained from Google Sign-In.</param>
+    /// <returns>AuthResponseDto with JWT tokens.</returns>
     /// <response code="200">Authenticated successfully.</response>
     /// <response code="400">Invalid Google Token.</response>
     [HttpPost("google-login")]
@@ -73,10 +109,17 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Refreshes the Access Token.
+    /// Refreshes the access token using a valid refresh token.
     /// </summary>
     /// <remarks>
-    /// Uses a valid Refresh Token to obtain a new Access Token without re-credentials.
+    /// Uses a valid refresh token to obtain a new access token without requiring user credentials.
+    /// 
+    /// **Token Rotation:**
+    /// - Old access token is invalidated
+    /// - New access token is issued
+    /// - Refresh token may be rotated (check response)
+    /// 
+    /// Call this endpoint when you receive 401 Unauthorized due to expired access token.
     /// </remarks>
     /// <param name="command">The current tokens.</param>
     /// <returns>New tokens.</returns>

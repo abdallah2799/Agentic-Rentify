@@ -1,10 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
+namespace Agentic_Rentify.Api.Controllers;
+
 /// <summary>
 /// Provides system health status diagnostics.
 /// </summary>
+/// <remarks>
+/// Basic health check endpoint for monitoring and service availability verification.
+/// </remarks>
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
+[ApiExplorerSettings(GroupName = "Admin")]
 public class HealthCheckController : ControllerBase
 {
     /// <summary>
