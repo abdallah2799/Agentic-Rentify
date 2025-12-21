@@ -1,8 +1,10 @@
 using System.Linq.Expressions;
 using Agentic_Rentify.Core.Common;
 using Agentic_Rentify.Application.Interfaces;
+using Agentic_Rentify.Core.Specifications;
 using Microsoft.EntityFrameworkCore;
 using Agentic_Rentify.Infrastructure.Persistence;
+using Agentic_Rentify.Infrastructure.Specifications;
 
 namespace Agentic_Rentify.Infrastructure.Repositories;
 
@@ -28,6 +30,12 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     public async Task<IReadOnlyList<T>> GetAsync(Expression<Func<T, bool>> predicate)
     {
         return await _context.Set<T>().Where(predicate).ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec)
+    {
+        var query = ApplySpecification(spec);
+        return await query.ToListAsync();
     }
 
     public async Task<IReadOnlyList<T>> GetPagedResponseAsync(int page, int size)
@@ -60,6 +68,12 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
         return (items, totalCount);
     }
 
+    public async Task<int> CountAsync(ISpecification<T> spec)
+    {
+        var query = ApplySpecification(spec);
+        return await query.CountAsync();
+    }
+
     public async Task<T> AddAsync(T entity)
     {
         await _context.Set<T>().AddAsync(entity);
@@ -82,5 +96,10 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     {
         _context.Set<T>().Remove(entity);
         await Task.CompletedTask;
+    }
+
+    private IQueryable<T> ApplySpecification(ISpecification<T> spec)
+    {
+        return SpecificationEvaluator<T>.GetQuery(_context.Set<T>().AsQueryable(), spec);
     }
 }

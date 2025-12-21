@@ -1,8 +1,9 @@
-using System.Linq.Expressions;
+using System;
 using Agentic_Rentify.Application.Features.Trips.DTOs;
 using Agentic_Rentify.Application.Wrappers;
 using Agentic_Rentify.Core.Entities;
 using Agentic_Rentify.Application.Interfaces;
+using Agentic_Rentify.Application.Features.Trips.Specifications;
 using AutoMapper;
 using MediatR;
 
@@ -13,17 +14,17 @@ public class GetAllTripsQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
 {
     public async Task<PagedResponse<TripResponseDTO>> Handle(GetAllTripsQuery request, CancellationToken cancellationToken)
     {
-        Expression<Func<Trip, bool>>? filter = null;
-        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
-        {
-            filter = t => t.Title.Contains(request.SearchTerm) || t.Description.Contains(request.SearchTerm);
-        }
+        var spec = new TripWithFiltersSpecification(request, applyPaging: true);
+        var items = await unitOfWork.Repository<Trip>().ListAsync(spec);
 
-        var (items, totalCount) = await unitOfWork.Repository<Trip>()
-            .GetPagedAppAsync(request.PageNumber, request.PageSize, filter);
+        var countSpec = new TripWithFiltersSpecification(request, applyPaging: false);
+        var totalCount = await unitOfWork.Repository<Trip>().CountAsync(countSpec);
 
         var dtos = mapper.Map<IReadOnlyList<TripResponseDTO>>(items);
 
-        return new PagedResponse<TripResponseDTO>(dtos, request.PageNumber, request.PageSize, totalCount);
+        var pageNumber = Math.Max(1, request.PageNumber);
+        var pageSize = Math.Max(1, request.PageSize);
+
+        return new PagedResponse<TripResponseDTO>(dtos, pageNumber, pageSize, totalCount);
     }
 }

@@ -28,18 +28,15 @@ public class AttractionsController : ControllerBase
     }
 
     /// <summary>
-    /// Get all attractions with pagination and optional search.
+    /// Get all attractions with pagination and optional search/filters.
     /// </summary>
-    /// <param name="pageNumber">Page number (1-based)</param>
-    /// <param name="pageSize">Number of items per page</param>
-    /// <param name="searchTerm">Optional search query across name, description, city</param>
+    /// <param name="query">Paging and filters: pageNumber, pageSize, searchTerm, city, category, minRating</param>
     /// <returns>Paginated list of attractions (excludes soft-deleted)</returns>
     /// <response code="200">Returns paginated attraction list</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? searchTerm = null)
+    public async Task<IActionResult> GetAll([FromQuery] GetAllAttractionsQuery query)
     {
-        var query = new GetAllAttractionsQuery { PageNumber = pageNumber, PageSize = pageSize, SearchTerm = searchTerm };
         var result = await _mediator.Send(query);
         return Ok(result);
     }

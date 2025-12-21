@@ -22,14 +22,14 @@ public class UpdateTripCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IM
         await unitOfWork.Repository<Trip>().UpdateAsync(trip);
         await unitOfWork.CompleteAsync();
 
-        var text = string.Join(" ", new[] { trip.Title, trip.Description });
+        var text = string.Join(" ", new[] { trip.Title, trip.Description, trip.City });
         await mediator.Publish(new EntitySavedToVectorDbEvent(
             trip.Id,
             "Trip",
             text,
             name: trip.Title,
             price: trip.Price,
-            city: null), cancellationToken);
+            city: trip.City), cancellationToken);
 
         return trip.Id;
     }

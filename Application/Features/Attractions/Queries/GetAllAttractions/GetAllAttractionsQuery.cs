@@ -9,4 +9,7 @@ public class GetAllAttractionsQuery : IRequest<PagedResponse<AttractionResponseD
     public int PageNumber { get; set; } = 1;
     public int PageSize { get; set; } = 10;
     public string? SearchTerm { get; set; }
+    public string? City { get; set; }
+    public string? Category { get; set; }
+    public double? MinRating { get; set; }
 }

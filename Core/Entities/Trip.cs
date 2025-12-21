@@ -6,6 +6,8 @@ public class Trip : BaseEntity
 {
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
+    public DateTime? StartDate { get; set; }
     public decimal Price { get; set; }
     public double Rating { get; set; }
     public int TotalReviews { get; set; }

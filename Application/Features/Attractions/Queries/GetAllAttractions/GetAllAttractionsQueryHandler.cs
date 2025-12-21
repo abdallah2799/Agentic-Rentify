@@ -1,8 +1,9 @@
-using System.Linq.Expressions;
+using System;
 using Agentic_Rentify.Application.Features.Attractions.DTOs;
 using Agentic_Rentify.Application.Wrappers;
 using Agentic_Rentify.Core.Entities;
 using Agentic_Rentify.Application.Interfaces;
+using Agentic_Rentify.Application.Features.Attractions.Specifications;
 using AutoMapper;
 using MediatR;
 
@@ -21,17 +22,17 @@ public class GetAllAttractionsQueryHandler : IRequestHandler<GetAllAttractionsQu
 
     public async Task<PagedResponse<AttractionResponseDTO>> Handle(GetAllAttractionsQuery request, CancellationToken cancellationToken)
     {
-        Expression<Func<Attraction, bool>>? filter = null;
-        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
-        {
-            filter = a => a.Name.Contains(request.SearchTerm) || a.City.Contains(request.SearchTerm);
-        }
+        var spec = new AttractionWithFiltersSpecification(request, applyPaging: true);
+        var items = await _unitOfWork.Repository<Attraction>().ListAsync(spec);
 
-        var (items, totalCount) = await _unitOfWork.Repository<Attraction>()
-            .GetPagedAppAsync(request.PageNumber, request.PageSize, filter);
+        var countSpec = new AttractionWithFiltersSpecification(request, applyPaging: false);
+        var totalCount = await _unitOfWork.Repository<Attraction>().CountAsync(countSpec);
 
         var dtos = _mapper.Map<IReadOnlyList<AttractionResponseDTO>>(items);
 
-        return new PagedResponse<AttractionResponseDTO>(dtos, request.PageNumber, request.PageSize, totalCount);
+        var pageNumber = Math.Max(1, request.PageNumber);
+        var pageSize = Math.Max(1, request.PageSize);
+
+        return new PagedResponse<AttractionResponseDTO>(dtos, pageNumber, pageSize, totalCount);
     }
 }

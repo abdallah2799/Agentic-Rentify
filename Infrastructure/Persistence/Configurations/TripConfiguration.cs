@@ -10,7 +10,9 @@ public class TripConfiguration : IEntityTypeConfiguration<Trip>
         builder.ToTable("Trips");
 
         builder.Property(t => t.Title).IsRequired().HasMaxLength(250);
+        builder.Property(t => t.City).HasMaxLength(150);
         builder.Property(t => t.Price).HasPrecision(18, 2);
+        builder.Property(t => t.StartDate);
 
         // تخزين الـ Itinerary كـ JSON (Nested List)
         builder.OwnsMany(t => t.Itinerary, i =>

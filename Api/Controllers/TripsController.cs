@@ -23,22 +23,20 @@ namespace Agentic_Rentify.Api.Controllers;
 public class TripsController(IMediator mediator) : ControllerBase
 {
     /// <summary>
-    /// Get all trips with pagination and optional search.
+    /// Get all trips with pagination and optional search/filters.
     /// </summary>
-    /// <param name="pageNumber">Page number (1-based)</param>
-    /// <param name="pageSize">Number of items per page</param>
-    /// <param name="searchTerm">Optional search query across trip name, description, destination</param>
+    /// <param name="query">Paging and filters: pageNumber, pageSize, searchTerm, minPrice, maxPrice, city, startDate</param>
     /// <returns>Paginated list of trips with metadata</returns>
     /// <remarks>
     /// Returns trips with basic information. Use GET /api/Trips/{id} for full itinerary details.
-    /// Search is performed across Name, Description, Destination, and Overview fields.
+    /// Search is performed across name and description.
+    /// Additional filters: minPrice, maxPrice, city (exact match), and startDate (inclusive, date-only).
     /// </remarks>
     /// <response code="200">Returns paginated trip list</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? searchTerm = null)
+    public async Task<IActionResult> GetAll([FromQuery] GetAllTripsQuery query)
     {
-        var query = new GetAllTripsQuery { PageNumber = pageNumber, PageSize = pageSize, SearchTerm = searchTerm };
         var result = await mediator.Send(query);
         return Ok(result);
     }
