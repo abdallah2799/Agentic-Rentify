@@ -1,4 +1,4 @@
-using Agentic_Rentify.Infragentic.Interfaces;
+using Agentic_Rentify.Application.Interfaces;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;

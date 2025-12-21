@@ -1,4 +1,4 @@
-using Agentic_Rentify.Infragentic.Interfaces;
+using Agentic_Rentify.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 

@@ -1,8 +1,8 @@
 using System;
 using System.Linq.Expressions;
 using Agentic_Rentify.Application.Features.Trips.Queries.GetAllTrips;
+using Agentic_Rentify.Application.Specifications;
 using Agentic_Rentify.Core.Entities;
-using Agentic_Rentify.Core.Specifications;
 
 namespace Agentic_Rentify.Application.Features.Trips.Specifications;
 

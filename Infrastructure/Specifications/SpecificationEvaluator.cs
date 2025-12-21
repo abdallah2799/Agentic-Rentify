@@ -1,5 +1,5 @@
 using System.Linq;
-using Agentic_Rentify.Core.Specifications;
+using Agentic_Rentify.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Agentic_Rentify.Infrastructure.Specifications;

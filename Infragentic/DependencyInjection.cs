@@ -3,7 +3,6 @@ using Agentic_Rentify.Infragentic.Plugins;
 using Agentic_Rentify.Infragentic.Filters;
 using Agentic_Rentify.Infragentic.Services;
 using Agentic_Rentify.Application.Interfaces;
-using Agentic_Rentify.Infragentic.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
