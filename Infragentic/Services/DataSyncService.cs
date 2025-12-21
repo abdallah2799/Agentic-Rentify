@@ -1,4 +1,5 @@
 using Agentic_Rentify.Application.Interfaces;
+using Agentic_Rentify.Application.Specifications;
 using Agentic_Rentify.Core.Entities;
 
 namespace Agentic_Rentify.Infragentic.Services
@@ -19,7 +20,7 @@ namespace Agentic_Rentify.Infragentic.Services
             await _vectorDbService.CreateCollectionIfNotExists(collectionName);
 
             // Sync Attractions
-            var attractions = await _unitOfWork.Repository<Attraction>().ListAllAsync();
+            var attractions = await _unitOfWork.Repository<Attraction>().ListAsync(new ActiveEntitySpecification<Attraction>());
             foreach (var a in attractions)
             {
                 var text = string.Join(" ", new[] { a.Name, a.Description, a.Overview });
@@ -27,15 +28,15 @@ namespace Agentic_Rentify.Infragentic.Services
             }
 
             // Sync Trips
-            var trips = await _unitOfWork.Repository<Trip>().ListAllAsync();
+            var trips = await _unitOfWork.Repository<Trip>().ListAsync(new ActiveEntitySpecification<Trip>());
             foreach (var t in trips)
             {
-                var text = string.Join(" ", new[] { t.Title, t.Description });
-                await _vectorDbService.SaveTextVector(collectionName, t.Id.ToString(), "Trip", text, t.Title, t.Price, null);
+                var text = string.Join(" ", new[] { t.Title, t.Description, t.City ?? string.Empty, t.StartDate?.ToShortDateString() ?? string.Empty });
+                await _vectorDbService.SaveTextVector(collectionName, t.Id.ToString(), "Trip", text, t.Title, t.Price, t.City);
             }
 
             // Sync Hotels
-            var hotels = await _unitOfWork.Repository<Hotel>().ListAllAsync();
+            var hotels = await _unitOfWork.Repository<Hotel>().ListAsync(new ActiveEntitySpecification<Hotel>());
             foreach (var h in hotels)
             {
                 var text = string.Join(" ", new[] { h.Name, h.Description });
@@ -43,7 +44,7 @@ namespace Agentic_Rentify.Infragentic.Services
             }
 
             // Sync Cars
-            var cars = await _unitOfWork.Repository<Car>().ListAllAsync();
+            var cars = await _unitOfWork.Repository<Car>().ListAsync(new ActiveEntitySpecification<Car>());
             foreach (var c in cars)
             {
                 var text = string.Join(" ", new[] { c.Name, c.Description, c.Overview });
